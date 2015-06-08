@@ -1,11 +1,11 @@
 # Set the working directory to the location of R-scripts
-setwd("/projects/EOT/skope/PaleoCAR_RUN/R")
+setwd("/projects/EOT/skope/PaleoCAR-SKOPE/R")
 
 # Load the functions for all analyses below
-install.packages("devtools", dependencies=T, repos = "http://cran.rstudio.com")
+# install.packages("devtools", dependencies=T, repos = "http://cran.rstudio.com")
 # update.packages(ask=F, repos = "http://cran.rstudio.com")
-devtools::install_github("bocinsky/FedData")
-devtools::install_github("bocinsky/PaleoCAR")
+# devtools::install_github("bocinsky/FedData")
+# devtools::install_github("bocinsky/PaleoCAR")
 library(FedData)
 library(PaleoCAR)
 pkg_test("parallel")
@@ -27,15 +27,15 @@ calibration.years <- 1924:1983
 prediction.years <- 1:2000
 
 # The Four Corners states
-states <- rgdal::readOGR("../DATA/NATIONAL_ATLAS/statep010","statep010")
+states <- rgdal::readOGR("../../PaleoCAR_RUN/DATA/NATIONAL_ATLAS/statep010","statep010")
 states <- states[states$STATE %in% c("Arizona","Colorado","New Mexico","Utah"),]
 states <- rgeos::gUnaryUnion(states)
 
 # Extract the Four Corners standardized tree-ring chronologies
-ITRDB <- data.frame(YEAR=prediction.years, get_itrdb(template=states, label="SKOPE_4CORNERS", raw.dir = "../DATA/ITRDB/RAW/ITRDB/", extraction.dir = "../DATA/ITRDB/EXTRACTIONS/ITRDB/", recon.years=prediction.years, calib.years=calibration.years, measurement.type="Ring Width", chronology.type="Standard")[['widths']])
+ITRDB <- data.frame(YEAR=prediction.years, get_itrdb(template=states, label="SKOPE_4CORNERS", raw.dir = "../../PaleoCAR_RUN/DATA/ITRDB/RAW/ITRDB/", extraction.dir = "../../PaleoCAR_RUN/DATA/ITRDB/EXTRACTIONS/ITRDB/", recon.years=prediction.years, calib.years=calibration.years, measurement.type="Ring Width", chronology.type="Standard")[['widths']])
 
 # Load the annual chunked raster bricks
-ppt.water_year_chunks.files <- list.files("../DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/PPT_water_year", full.names=T)
+ppt.water_year_chunks.files <- list.files("../../PaleoCAR_RUN/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/PPT_water_year", full.names=T)
 # gdd.may_sept_chunks.files <- list.files(paste0(EXTRACTION.DIR,"GDD_may_sept/"), full.names=T)
 
 ## BEGIN PARALLELIZATION!
@@ -53,14 +53,8 @@ process.brick <- function(brick.file, brick.years, calibration.years, prediction
   return()
 }
 
-## Looping Run
-# junk <- lapply(ppt.water_year_chunks.files, process.brick, brick.years=1896:2013, out.dir="../OUTPUT/PPT_water_year/", floor=0, verbose=T, calibration.years=calibration.years, prediction.years=prediction.years, chronologies=ITRDB, force.redo=F)
-
 # ## PARALLEL RUN
 cl <- makeCluster(detectCores())
 clusterEvalQ(cl, {library(PaleoCAR)})
-parLapply(cl, ppt.water_year_chunks.files, process.brick, brick.years=1896:2013, out.dir="../OUTPUT/PPT_water_year/", floor=0, verbose=F, calibration.years=calibration.years, prediction.years=prediction.years, chronologies=ITRDB, force.redo=F)
+parLapply(cl, ppt.water_year_chunks.files, process.brick, brick.years=1896:2013, out.dir="../../PaleoCAR_RUN/OUTPUT/PPT_water_year/", floor=0, verbose=F, calibration.years=calibration.years, prediction.years=prediction.years, chronologies=ITRDB, force.redo=F)
 stopCluster(cl)
-
-
-
