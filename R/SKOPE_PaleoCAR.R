@@ -31,8 +31,11 @@ states <- rgdal::readOGR("../../PaleoCAR_RUN/DATA/NATIONAL_ATLAS/statep010","sta
 states <- states[states$STATE %in% c("Arizona","Colorado","New Mexico","Utah"),]
 states <- rgeos::gUnaryUnion(states)
 
+# Create a 10-degree buffer around the 4C states
+treePoly <- suppressWarnings(rgeos::gBuffer(states, width=10, quadsegs=1000))
+
 # Extract the Four Corners standardized tree-ring chronologies
-ITRDB <- data.frame(YEAR=prediction.years, get_itrdb(template=states, label="SKOPE_4CORNERS", raw.dir = "../../PaleoCAR_RUN/DATA/ITRDB/RAW/ITRDB/", extraction.dir = "../../PaleoCAR_RUN/DATA/ITRDB/EXTRACTIONS/ITRDB/", recon.years=prediction.years, calib.years=calibration.years, measurement.type="Ring Width", chronology.type="Standard")[['widths']])
+ITRDB <- data.frame(YEAR=prediction.years, get_itrdb(template=treePoly, label="SKOPE_4CORNERS_PLUS_10DEG", raw.dir = "../../PaleoCAR_RUN/DATA/ITRDB/RAW/ITRDB/", extraction.dir = "../../PaleoCAR_RUN/DATA/ITRDB/EXTRACTIONS/ITRDB/", recon.years=prediction.years, calib.years=calibration.years, measurement.type="Ring Width", chronology.type="Standard")[['widths']])
 
 # Load the annual chunked raster bricks
 ppt.water_year_chunks.files <- list.files("../../PaleoCAR_RUN/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/PPT_water_year", full.names=T)
@@ -57,4 +60,5 @@ process.brick <- function(brick.file, brick.years, calibration.years, prediction
 cl <- makeCluster(detectCores())
 clusterEvalQ(cl, {library(PaleoCAR)})
 parLapply(cl, ppt.water_year_chunks.files, process.brick, brick.years=1896:2013, out.dir="../../PaleoCAR_RUN/OUTPUT/PPT_water_year/", floor=0, verbose=F, calibration.years=calibration.years, prediction.years=prediction.years, chronologies=ITRDB, force.redo=F)
+
 stopCluster(cl)
