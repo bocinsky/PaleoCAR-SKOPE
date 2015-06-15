@@ -1,4 +1,4 @@
-setwd("~/Dropbox/skope/PaleoCAR/R")
+setwd("~/git/PaleoCAR-SKOPE/R")
 source("./calcGDD_MONTHLY.R")
 source("./annualizePRISM_MONTHLY.R")
 source("./demosaic.R")
@@ -9,7 +9,8 @@ source("./demosaic.R")
 ## and subdivides the extent into 14,400 (120x120) cell chunks for computation.
 ## (the chunks are 1x1 degree).
 ## These chunks are saved for later computation.
-devtools::install_github("bocinsky/FedData"); library(FedData)
+# devtools::install_github("bocinsky/FedData"); library(FedData)
+library(FedData)
 pkgTest("sp")
 pkgTest("raster")
 
@@ -114,8 +115,11 @@ names(type.stacks) <- types
 # rm(tmean.may_sept); gc(); gc()
 
 # May--Sept GDD
-gdd.monthly <- calcGDD_MONTHLY(tmin_brick=type.stacks[['tmin']], tmax_brick=type.stacks[['tmax']], t.base=10, t.cap=30, to_fahrenheit=T)
-writeRaster(gdd.monthly,paste0(EXTRACTION.DIR,'gdd.monthly.tif'), datatype="INT2S", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
+# gdd.monthly <- calcGDD_MONTHLY(tmin_brick=type.stacks[['tmin']], tmax_brick=type.stacks[['tmax']], t.base=10, t.cap=30, to_fahrenheit=T)
+# writeRaster(gdd.monthly,paste0(EXTRACTION.DIR,'gdd.monthly.tif'), datatype="INT2S", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
+gdd.monthly <- brick(paste0(EXTRACTION.DIR,'gdd.monthly.tif'))
+names(gdd.monthly) <- names(type.stacks[['tmin']])
+rm(type.stacks);gc();gc()
 gdd.may_sept <- annualizePRISM_MONTHLY(prism.brick=gdd.monthly, months=c(5:9), fun='sum')
 writeRaster(gdd.may_sept,paste0(EXTRACTION.DIR,'gdd.may_sept.tif'), datatype="INT2S", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
 rm(gdd.may_sept); rm(gdd.monthly); gc(); gc()
