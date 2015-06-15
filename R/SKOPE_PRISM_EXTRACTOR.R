@@ -115,8 +115,8 @@ names(type.stacks) <- types
 # rm(tmean.may_sept); gc(); gc()
 
 # May--Sept GDD
-# gdd.monthly <- calcGDD_MONTHLY(tmin_brick=type.stacks[['tmin']], tmax_brick=type.stacks[['tmax']], t.base=10, t.cap=30, to_fahrenheit=T)
-# writeRaster(gdd.monthly,paste0(EXTRACTION.DIR,'gdd.monthly.tif'), datatype="INT2S", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
+gdd.monthly <- calcGDD_MONTHLY(tmin_brick=type.stacks[['tmin']], tmax_brick=type.stacks[['tmax']], t.base=10, t.cap=30, to_fahrenheit=T)
+writeRaster(gdd.monthly,paste0(EXTRACTION.DIR,'gdd.monthly.tif'), datatype="INT2S", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
 gdd.monthly <- brick(paste0(EXTRACTION.DIR,'gdd.monthly.tif'))
 names(gdd.monthly) <- names(type.stacks[['tmin']])
 rm(type.stacks);gc();gc()
