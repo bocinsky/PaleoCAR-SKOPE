@@ -1,0 +1,21 @@
+Loading required package: sp
+Loading required package: rgdal
+Loading required package: methods
+rgdal: version: 0.9-3, (SVN revision 530)
+ Geospatial Data Abstraction Library extensions to R successfully loaded
+ Loaded GDAL runtime: GDAL 1.11.1, released 2014/09/24
+ Path to GDAL shared files: /usr/local/Cellar/gdal/1.11.1_1/share/gdal
+ Loaded PROJ.4 runtime: Rel. 4.9.1, 04 March 2015, [PJ_VERSION: 491]
+ Path to PROJ.4 shared files: (autodetected)
+ Linking to sp version: 1.1-1 
+Loading required package: raster
+Loading required package: RCurl
+Loading required package: bitops
+mkdir: /Volumes/DATA: File exists
+mount_afp: the volume is already mounted
+OGR data source with driver: ESRI Shapefile 
+Source: "/Volumes/DATA/NATIONAL_ATLAS/statep010", layer: "statep010"
+with 62 features
+It has 9 fields
+
+Execution halted

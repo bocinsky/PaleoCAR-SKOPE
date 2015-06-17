@@ -115,11 +115,14 @@ names(type.stacks) <- types
 # rm(tmean.may_sept); gc(); gc()
 
 # May--Sept GDD
+message("Calculating Monthly GDDs")
 gdd.monthly <- calcGDD_MONTHLY(tmin_brick=type.stacks[['tmin']], tmax_brick=type.stacks[['tmax']], t.base=10, t.cap=30, to_fahrenheit=T)
 writeRaster(gdd.monthly,paste0(EXTRACTION.DIR,'gdd.monthly.tif'), datatype="INT2S", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
 gdd.monthly <- brick(paste0(EXTRACTION.DIR,'gdd.monthly.tif'))
 names(gdd.monthly) <- names(type.stacks[['tmin']])
 rm(type.stacks);gc();gc()
+
+message("Calculating Annual GDDs")
 gdd.may_sept <- annualizePRISM_MONTHLY(prism.brick=gdd.monthly, months=c(5:9), fun='sum')
 writeRaster(gdd.may_sept,paste0(EXTRACTION.DIR,'gdd.may_sept.tif'), datatype="INT2S", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
 rm(gdd.may_sept); rm(gdd.monthly); gc(); gc()
@@ -133,6 +136,7 @@ rm(gdd.may_sept); rm(gdd.monthly); gc(); gc()
 # rm(ppt.water_year); rm(ppt.water_year_chunks); gc(); gc()
 
 # May--Sept GDD
+message("Demosaicking annual GDDs")
 gdd.may_sept <- brick(paste0(EXTRACTION.DIR,'gdd.may_sept.tif'))
 gdd.may_sept_chunks <- demosaic(raster_brick=gdd.may_sept, corners=extent.states.SW.corners, out_dir=paste0(EXTRACTION.DIR,"GDD_may_sept/"))
 rm(gdd.may_sept); rm(gdd.may_sept_chunks); gc(); gc()
