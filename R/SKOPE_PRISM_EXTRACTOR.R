@@ -11,8 +11,8 @@ source("./demosaic.R")
 ## These chunks are saved for later computation.
 # devtools::install_github("bocinsky/FedData"); library(FedData)
 library(FedData)
-pkgTest("sp")
-pkgTest("raster")
+pkg_test("sp")
+pkg_test("raster")
 
 username <- 'SKOPE'
 password <- 'SKOPE'
