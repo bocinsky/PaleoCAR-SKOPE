@@ -1,1 +1,1 @@
-ssh -n -f rkbocinsky@titania.anth.wsu.edu "sh -c 'cd git/PaleoCAR-SKOPE/R; nohup RSCRIPT ./SKOPE_PaleoCAR.R > /dev/null 2>&1 &'"
+ssh -n -f rkbocinsky@titania.anth.wsu.edu "sh -c 'cd git/PaleoCAR-SKOPE/R; nohup RSCRIPT ./SKOPE_PRISM_EXTRACTOR.R > /dev/null 2>&1 &'"
