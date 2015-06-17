@@ -2,7 +2,10 @@ calcGDD_MONTHLY <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, to_fahre
   if(nlayers(tmin_brick)!=nlayers(tmax_brick)){
     stop("tmin and tmax bricks must have same number of layers!")
   }
-  
+#   
+#   tmin_brick <- brick(tmin_brick)
+#   tmax_brick <- brick(tmax_brick)
+#     
   # Floor tmax and tmin at Tbase
   tmin_brick <- calc(tmin_brick,function(x) { x[x<t.base] <- t.base; return(x) })
   tmax_brick <- calc(tmax_brick,function(x) { x[x<t.base] <- t.base; return(x) })
@@ -14,7 +17,7 @@ calcGDD_MONTHLY <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, to_fahre
   }
   
   GDD_brick <- ((tmin_brick+tmax_brick)/2)-t.base
-  GDD_brick_months <- as.numeric(gsub("Y\\d{4}[.]M","",names(GDD_brick)))
+  GDD_brick_months <- as.numeric(substr(gsub("\\D","",names(GDD_brick)),7,8))
   
   year_months <- 1:12
   days_per_month <- c(31,28,31,30,31,30,31,31,30,31,30,31)
