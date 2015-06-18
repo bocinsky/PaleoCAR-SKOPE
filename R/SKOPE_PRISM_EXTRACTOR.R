@@ -24,8 +24,9 @@ system(paste0("mount -t afp afp://",username,":",password,"@prospero.anth.wsu.ed
 rasterOptions(chunksize=2e+08,maxmemory=2e+09)
 
 TEMP.DIR <- "/Volumes/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/TEMP"
-dir.create(TEMP.DIR, recursive=T, showWarnings=F)
+dir.create(TEMP.DIR, recursive=T)
 rasterOptions(tmpdir=TEMP.DIR)
+tmpDir()
 
 PRISM800.DIR <- "/Volumes/DATA/PRISM/LT81_800M/"
 EXTRACTION.DIR <- "/Volumes/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/"
