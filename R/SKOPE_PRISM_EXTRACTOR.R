@@ -21,9 +21,9 @@ system('mkdir /Volumes/DATA')
 system(paste0("mount -t afp afp://",username,":",password,"@prospero.anth.wsu.edu/DATA /Volumes/DATA"))
 
 # Force Raster to load large rasters into memory
-rasterOptions(chunksize=2e+07,maxmemory=2e+08)
+rasterOptions(chunksize=2e+08,maxmemory=2e+09)
 
-TEMP.DIR <- "/Volumes/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/TEMP/"
+TEMP.DIR <- "/Volumes/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/TEMP"
 dir.create(TEMP.DIR, recursive=T, showWarnings=F)
 rasterOptions(tmpdir=TEMP.DIR)
 
