@@ -17,6 +17,7 @@ pkg_test("raster")
 username <- 'SKOPE'
 password <- 'SKOPE'
 
+system("umount /Volumes/DATA")
 system('mkdir /Volumes/DATA')
 system(paste0("mount -t afp afp://",username,":",password,"@prospero.anth.wsu.edu/DATA /Volumes/DATA"))
 
