@@ -23,6 +23,10 @@ system(paste0("mount -t afp afp://",username,":",password,"@prospero.anth.wsu.ed
 # Force Raster to load large rasters into memory
 rasterOptions(chunksize=2e+07,maxmemory=2e+08)
 
+TEMP.DIR <- "/Volumes/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/TEMP/"
+dir.create(TEMP.DIR, recursive=T, showWarnings=F)
+rasterOptions(tmpdir=TEMP.DIR)
+
 PRISM800.DIR <- "/Volumes/DATA/PRISM/LT81_800M/"
 EXTRACTION.DIR <- "/Volumes/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/"
 
