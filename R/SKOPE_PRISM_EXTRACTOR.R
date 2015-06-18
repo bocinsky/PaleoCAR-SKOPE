@@ -122,11 +122,8 @@ names(type.stacks) <- types
 
 # May--Sept GDD
 message("Calculating Monthly GDDs")
-gdd.monthly <- calcGDD_MONTHLY(tmin_brick=type.stacks[['tmin']], tmax_brick=type.stacks[['tmax']], t.base=10, t.cap=30, to_fahrenheit=T)
-writeRaster(gdd.monthly,paste0(EXTRACTION.DIR,'gdd.monthly.tif'), datatype="INT2S", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
-gdd.monthly <- brick(paste0(EXTRACTION.DIR,'gdd.monthly.tif'))
-names(gdd.monthly) <- names(type.stacks[['tmin']])
-rm(type.stacks);gc();gc()
+dir.create(paste0(EXTRACTION.DIR,"gdd/"), recursive=T, showWarnings=F)
+gdd.monthly <- calcGDD_MONTHLY(tmin_brick=type.stacks[['tmin']], tmax_brick=type.stacks[['tmax']], t.base=10, t.cap=30, to_fahrenheit=T, output.dir=paste0(EXTRACTION.DIR,"gdd/"))
 
 message("Calculating Annual GDDs")
 gdd.may_sept <- annualizePRISM_MONTHLY(prism.brick=gdd.monthly, months=c(5:9), fun='sum')
