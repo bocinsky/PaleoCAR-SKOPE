@@ -1,6 +1,11 @@
-calcGDD_MONTHLY <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, to_fahrenheit=T, output.dir='./gdd/'){
+calcGDD_MONTHLY <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, multiplier=1, to_fahrenheit=T, output.dir='./gdd/'){
   if(nlayers(tmin_brick)!=nlayers(tmax_brick)){
     stop("tmin and tmax bricks must have same number of layers!")
+  }
+  
+  t.base <- t.base*multiplier
+  if(!is.null(t.cap)){
+    t.cap <- t.cap*multiplier
   }
   
   files <- names(tmin_brick)
@@ -12,7 +17,7 @@ calcGDD_MONTHLY <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, to_fahre
   GDD_days <- as.numeric(mapply(gsub, year_months, days_per_month, GDD_months))
   
   for(i in 1:nlayers(tmin_brick)){
-
+    
     if(file.exists(paste0(output.dir,files[i],".tif"))) next
     tmin <- tmin_brick[[i]]
     tmax <- tmax_brick[[i]]
@@ -30,7 +35,7 @@ calcGDD_MONTHLY <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, to_fahre
     GDD <- ((tmin+tmax)/2)-t.base
     
     # Multiply by days per month, and convert to Fahrenheit GDD
-    GDD <- GDD * GDD_days[i]
+    GDD <- GDD * GDD_days[i] / multiplier
     
     if(to_fahrenheit){
       GDD <- GDD * 1.8
@@ -40,6 +45,6 @@ calcGDD_MONTHLY <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, to_fahre
     
     writeRaster(GDD,paste0(output.dir,files[i],".tif"), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
   }
-
+  
   return(stack(list.files(output.dir, full.names=T), quick=T))
 }

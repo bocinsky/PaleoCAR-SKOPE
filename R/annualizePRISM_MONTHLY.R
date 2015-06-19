@@ -1,9 +1,7 @@
 annualizePRISM_MONTHLY <- function(prism.brick, months=c(1:12), fun){
   brick.names <- names(prism.brick)
-  brick.yearmonths <- gsub(".*_","",brick.names)
-  brick.yearmonths <- gsub(".bil","",brick.yearmonths)
-  brick.years <- as.numeric(substr(brick.yearmonths,1,4))
-  brick.months <- as.numeric(substr(brick.yearmonths,5,6))
+  brick.years <- as.numeric(lapply(strsplit(brick.names,"[A-Z]"),'[[',2))
+  brick.months <- as.numeric(lapply(strsplit(brick.names,"[A-Z]"),'[[',3))
   
   # If more months than a year, break
   if(length(months)>12){
@@ -23,15 +21,13 @@ annualizePRISM_MONTHLY <- function(prism.brick, months=c(1:12), fun){
   prism.brick <- prism.brick[[which(brick.years %in% c(0,as.numeric(names(table(brick.years))[table(brick.years)==length(months)])))]]
   brick.years <- brick.years[which(brick.years %in% c(0,as.numeric(names(table(brick.years))[table(brick.years)==length(months)])))]
   
-  signal.brick.temp <- setZ(prism.brick, brick.years, "year")
+#   signal.brick.temp <- setZ(prism.brick, brick.years, "year")
   
   if(fun=="sum"){
-    signal.brick.temp <- zApply(signal.brick.temp, by=getZ(signal.brick.temp), fun=sum)
+    signal.brick.temp <- stackApply(signal.brick.temp, indices=as.integer(as.factor(brick.years)), fun=sum)
   }else if(fun=="mean"){
-    signal.brick.temp <- zApply(signal.brick.temp, by=getZ(signal.brick.temp), fun=mean)
+    signal.brick.temp <- stackApply(signal.brick.temp, indices=as.integer(as.factor(brick.years)), fun=mean)
   }
-  signal.brick.temp <- signal.brick.temp[[(1:nlayers(signal.brick.temp))[names(signal.brick.temp)!="X0"]]]
-  #   signal.brick.temp <- round(signal.brick.temp, digits=3)
   
   return(signal.brick.temp)
 }

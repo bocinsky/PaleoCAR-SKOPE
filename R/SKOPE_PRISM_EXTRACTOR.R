@@ -13,6 +13,7 @@ source("./demosaic.R")
 library(FedData)
 pkg_test("sp")
 pkg_test("raster")
+pkg_test("Hmisc")
 
 username <- 'SKOPE'
 password <- 'SKOPE'
@@ -34,7 +35,7 @@ EXTRACTION.DIR <- "/Volumes/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/"
 
 # year.range <- 1924:1983
 
-types <- c("tmin","tmax")
+types <- c("ppt","tmin","tmax")
 
 # Extract and read a test grid from PRISM
 # unzip(paste0(PRISM800.DIR,"ppt/ppt_1895.zip"), exdir=paste(PRISM800.DIR,"ppt/",sep=''))
@@ -44,17 +45,19 @@ template.rast <- raster::setValues(raster::raster(paste0(PRISM800.DIR,"ppt/1895/
 # Read in the US states, and extract 4C states
 states <- rgdal::readOGR("/Volumes/DATA/NATIONAL_ATLAS/statep010","statep010")
 states <- states[states$STATE %in% c("Arizona","Colorado","New Mexico","Utah"),]
+
 # Transform to the CRS of the template raster
 states <- sp::spTransform(states, sp::CRS(raster::projection(template.rast)))
+
 # Get the extent
 extent.states <- raster::extent(states)
+
 # Floor the minimums, ceiling the maximums
 extent.states@xmin <- floor(extent.states@xmin)
 extent.states@ymin <- floor(extent.states@ymin)
 extent.states@xmax <- ceiling(extent.states@xmax)
 extent.states@ymax <- ceiling(extent.states@ymax)
-# plot(extent.states, add=T)
-# plot(template.rast, add=T)
+
 # Extract the template raster for the extent
 template.rast <- raster::crop(template.rast,extent.states)
 
@@ -67,10 +70,12 @@ type.stacks <- lapply(types, function(type){
   
   if(file.exists(paste0(EXTRACTION.DIR,type,'/'))){
     monthly.files <- list.files(paste0(EXTRACTION.DIR,type), recursive=T, full.names=T)
-    # Trim to only file names that are rasters
-    monthly.files <- grep("*\\.grd$", monthly.files, value=TRUE)
-    type.list.cropped <- raster::stack(monthly.files,native=F,quick=T)
-    return(type.list.cropped)
+    if(length(monthly.files)!=0){
+      # Trim to only file names that are rasters
+      monthly.files <- grep("*\\.tif$", monthly.files, value=TRUE)
+      type.list.cropped <- raster::stack(monthly.files,native=F,quick=T)
+      return(type.list.cropped)
+    }
   }
   
   # Get all file names
@@ -89,82 +94,49 @@ type.stacks <- lapply(types, function(type){
   suppressWarnings(dir.create(paste0(EXTRACTION.DIR,type)))
   
   cl <- parallel::makeCluster(8)
-  system.time(type.list.cropped <- parallel::parLapply(cl,type.list,function(type,PRISM800.DIR,EXTRACTION.DIR,extent.states,rast){return(raster::crop(rast,extent.states,file=paste0(EXTRACTION.DIR,type,'/',basename(raster::filename(rast)),'.grd'),overwrite=T))},extent.states=extent.states, type=type,PRISM800.DIR=PRISM800.DIR, EXTRACTION.DIR=EXTRACTION.DIR))
+  system.time(type.list.cropped <- parallel::parLapply(cl,type.list,function(type,PRISM800.DIR,EXTRACTION.DIR,template.rast,rast){
+    layer.name <- basename(raster::filename(rast))
+    yearmonth <- gsub(".*_","",layer.name)
+    yearmonth <- gsub(".bil","",yearmonth)
+    year <- as.numeric(substr(yearmonth,1,4))
+    month <- as.numeric(substr(yearmonth,5,6))
+    out.rast <- round(raster::crop(rast,template.rast)*ifelse(type=='ppt',1,10))
+    return(raster::writeRaster(out.rast,file=paste0(EXTRACTION.DIR,type,'/','Y',sprintf("%04d", year),'M',sprintf("%02d", month),'.tif'), datatype=ifelse(type=='ppt',"INT2U","INT2S"), options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE))
+    },template.rast=template.rast, type=type,PRISM800.DIR=PRISM800.DIR, EXTRACTION.DIR=EXTRACTION.DIR))
   parallel::stopCluster(cl)
   
   type.list.cropped <- raster::stack(type.list.cropped, quick=T)
-  names(type.list.cropped) <- basename(monthly.files)
   
   return(type.list.cropped)
 })
 
 names(type.stacks) <- types
 
-# # Annual precipitation
-# ppt.annual <- annualizePRISM_MONTHLY(prism.brick=type.stacks[['ppt']], months=c(1:12), fun='sum')
-# writeRaster(ppt.annual,paste0(EXTRACTION.DIR,'ppt.annual.tif'), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
-# rm(ppt.annual); gc(); gc()
-# 
-# # Water-year precipitation
-# ppt.water_year <- annualizePRISM_MONTHLY(prism.brick=type.stacks[['ppt']], months=c(-2:9), fun='sum')
-# writeRaster(ppt.water_year,paste0(EXTRACTION.DIR,'ppt.water_year.tif'), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
-# rm(ppt.water_year); gc(); gc()
-# 
-# # May--Sept precipitation
-# ppt.may_sept <- annualizePRISM_MONTHLY(prism.brick=type.stacks[['ppt']], months=c(5:9), fun='sum')
-# writeRaster(ppt.may_sept,paste0(EXTRACTION.DIR,'ppt.may_sept.tif'), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
-# rm(ppt.may_sept); gc(); gc()
-# 
-# # May--Sept Mean temperature
-# tmean.may_sept <- annualizePRISM_MONTHLY(prism.brick=(type.stacks[['tmin']]+type.stacks[['tmax']])/0.02, months=c(5:9), fun='mean')
-# writeRaster(tmean.may_sept,paste0(EXTRACTION.DIR,'tmean.may_sept.tif'), datatype="INT2S", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
-# rm(tmean.may_sept); gc(); gc()
+# Annual precipitation
+ppt.annual <- annualizePRISM_MONTHLY(prism.brick=type.stacks[['ppt']], months=c(1:12), fun='sum')
+writeRaster(ppt.annual,paste0(EXTRACTION.DIR,'ppt.annual.tif'), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
+ppt.annual.chunks <- demosaic(raster_brick=ppt.annual, corners=extent.states.SW.corners, out_dir=paste0(EXTRACTION.DIR,"PPT_annual/"))
+rm(ppt.annual); rm(ppt.annual.chunks); gc(); gc()
+
+# Water-year precipitation
+ppt.water_year <- annualizePRISM_MONTHLY(prism.brick=type.stacks[['ppt']], months=c(-2:9), fun='sum')
+writeRaster(ppt.water_year,paste0(EXTRACTION.DIR,'ppt.water_year.tif'), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
+ppt.water_year.chunks <- demosaic(raster_brick=ppt.water_year, corners=extent.states.SW.corners, out_dir=paste0(EXTRACTION.DIR,"PPT_water_year/"))
+rm(ppt.water_year); rm(ppt.water_year.chunks); gc(); gc()
+
+# May--Sept precipitation
+ppt.may_sept <- annualizePRISM_MONTHLY(prism.brick=type.stacks[['ppt']], months=c(5:9), fun='sum')
+writeRaster(ppt.may_sept,paste0(EXTRACTION.DIR,'ppt.may_sept.tif'), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
+ppt.may_sept.chunks <- demosaic(raster_brick=ppt.may_sept, corners=extent.states.SW.corners, out_dir=paste0(EXTRACTION.DIR,"PPT_may_sept/"))
+rm(ppt.may_sept); rm(ppt.may_sept.chunks); gc(); gc()
 
 # May--Sept GDD
-message("Calculating Monthly GDDs")
 dir.create(paste0(EXTRACTION.DIR,"gdd/"), recursive=T, showWarnings=F)
-gdd.monthly <- calcGDD_MONTHLY(tmin_brick=type.stacks[['tmin']], tmax_brick=type.stacks[['tmax']], t.base=10, t.cap=30, to_fahrenheit=T, output.dir=paste0(EXTRACTION.DIR,"gdd/"))
-
-message("Calculating Annual GDDs")
+gdd.monthly <- calcGDD_MONTHLY(tmin_brick=type.stacks[['tmin']], tmax_brick=type.stacks[['tmax']], t.base=10, t.cap=30, multiplier=10, to_fahrenheit=T, output.dir=paste0(EXTRACTION.DIR,"gdd/"))
 gdd.may_sept <- annualizePRISM_MONTHLY(prism.brick=gdd.monthly, months=c(5:9), fun='sum')
 writeRaster(gdd.may_sept,paste0(EXTRACTION.DIR,'gdd.may_sept.tif'), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
-rm(gdd.may_sept); rm(gdd.monthly); gc(); gc()
+gdd.may_sept.chunks <- demosaic(raster_brick=gdd.may_sept, corners=extent.states.SW.corners, out_dir=paste0(EXTRACTION.DIR,"GDD_may_sept/"))
+rm(gdd.may_sept); rm(gdd.may_sept.chunks); gc(); gc()
 
-
-
-## Perform the demosaicking
-# Water-year precipitation
-# ppt.water_year <- brick(paste0(EXTRACTION.DIR,'ppt.water_year.tif'))
-# ppt.water_year_chunks <- demosaic(raster_brick=ppt.water_year, corners=extent.states.SW.corners, out_dir=paste0(EXTRACTION.DIR,"PPT_water_year/"))
-# rm(ppt.water_year); rm(ppt.water_year_chunks); gc(); gc()
-
-# May--Sept GDD
-message("Demosaicking annual GDDs")
-gdd.may_sept <- brick(paste0(EXTRACTION.DIR,'gdd.may_sept.tif'))
-gdd.may_sept_chunks <- demosaic(raster_brick=gdd.may_sept, corners=extent.states.SW.corners, out_dir=paste0(EXTRACTION.DIR,"GDD_may_sept/"))
-rm(gdd.may_sept); rm(gdd.may_sept_chunks); gc(); gc()
 
 system("umount /Volumes/DATA")
-
-
-# test <- crop(test, extent(test,1,100,1,100))
-# test.grid <- as(test,'SpatialPolygons')
-# 
-# test.utm <- projectRaster(test,crs=CRS('+proj=utm +zone=12 +datum=NAD83'))
-# test.grid.utm <- spTransform(test.grid,CRS('+proj=utm +zone=12 +datum=NAD83'))
-#   
-#   
-# plot(test.utm)
-# plot(test.grid.utm, add=T)
-# 
-# plot(as(test,'SpatialPolygons'), add=T)
-# 
-# gl <- gridlines(test, easts=unique(coordinates(test)[,1]), norths=unique(coordinates(test)[,2]))
-# gl.dat <- gridat(gl)
-# 
-# plot(test)
-# plot(gl, add = TRUE)
-# plot(gl.dat, add = TRUE)
-
-
-
