@@ -127,7 +127,7 @@ gdd.monthly <- calcGDD_MONTHLY(tmin_brick=type.stacks[['tmin']], tmax_brick=type
 
 message("Calculating Annual GDDs")
 gdd.may_sept <- annualizePRISM_MONTHLY(prism.brick=gdd.monthly, months=c(5:9), fun='sum')
-writeRaster(gdd.may_sept,paste0(EXTRACTION.DIR,'gdd.may_sept.tif'), datatype="INT2S", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
+writeRaster(gdd.may_sept,paste0(EXTRACTION.DIR,'gdd.may_sept.tif'), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
 rm(gdd.may_sept); rm(gdd.monthly); gc(); gc()
 
 

@@ -12,6 +12,7 @@ calcGDD_MONTHLY <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, to_fahre
   GDD_days <- as.numeric(mapply(gsub, year_months, days_per_month, GDD_months))
   
   for(i in 1:nlayers(tmin_brick)){
+
     if(file.exists(paste0(output.dir,files[i],".tif"))) next
     tmin <- tmin_brick[[i]]
     tmax <- tmax_brick[[i]]
