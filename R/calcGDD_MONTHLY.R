@@ -9,33 +9,29 @@ calcGDD_MONTHLY <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, multipli
   }
   
   files <- names(tmin_brick)
-  files <- gsub("tmin","gdd",files)
   
-  GDD_months <- as.numeric(substr(gsub("\\D","",names(tmin_brick)),7,8))
-  year_months <- 1:12
-  days_per_month <- c(31,28,31,30,31,30,31,31,30,31,30,31)
-  GDD_days <- as.numeric(mapply(gsub, year_months, days_per_month, GDD_months))
+  cl <- parallel::makeCluster(8)
   
-  for(i in 1:nlayers(tmin_brick)){
+  junk <- parallel::parLapply(cl, files, function(tmin_brick, tmax_brick, output.dir, t.base, t.cap, multiplier,to_fahrenheit, file){
+    if(file.exists(paste0(output.dir,file,".tif"))) return()
     
-    if(file.exists(paste0(output.dir,files[i],".tif"))) next
-    tmin <- tmin_brick[[i]]
-    tmax <- tmax_brick[[i]]
+    tmin <- raster::subset(tmin_brick,subset=file)
+    tmax <- raster::subset(tmax_brick,subset=file)
     
     # Floor tmax and tmin at Tbase
-    tmin <- calc(tmin,function(x) { x[x<t.base] <- t.base; return(x) })
-    tmax <- calc(tmax,function(x) { x[x<t.base] <- t.base; return(x) })
+    tmin <- raster::calc(tmin,function(x) { x[x<t.base] <- t.base; return(x) })
+    tmax <- raster::calc(tmax,function(x) { x[x<t.base] <- t.base; return(x) })
     
     # Cap tmax and tmin at Tut
     if(!is.null(t.cap)){
-      tmin <- calc(tmin,function(x) { x[x>t.cap] <- t.cap; return(x) })
-      tmax <- calc(tmax,function(x) { x[x>t.cap] <- t.cap; return(x) })
+      tmin <- raster::calc(tmin,function(x) { x[x>t.cap] <- t.cap; return(x) })
+      tmax <- raster::calc(tmax,function(x) { x[x>t.cap] <- t.cap; return(x) })
     }
     
     GDD <- ((tmin+tmax)/2)-t.base
     
     # Multiply by days per month, and convert to Fahrenheit GDD
-    GDD <- GDD * GDD_days[i] / multiplier
+    GDD <- GDD * Hmisc::monthDays(as.Date(paste0(file,"D01"),format="Y%YM%mD%d")) / multiplier
     
     if(to_fahrenheit){
       GDD <- GDD * 1.8
@@ -43,8 +39,11 @@ calcGDD_MONTHLY <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, multipli
     
     GDD <- round(GDD)
     
-    writeRaster(GDD,paste0(output.dir,files[i],".tif"), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
-  }
+    raster::writeRaster(GDD,paste0(output.dir,file,".tif"), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),overwrite=T,setStatistics=FALSE)
+    return()
+  }, tmin_brick=tmin_brick, tmax_brick=tmax_brick,output.dir=output.dir, t.base=t.base, t.cap=t.cap, multiplier=multiplier, to_fahrenheit=to_fahrenheit)
+  
+  parallel::stopCluster(cl)
   
   return(stack(list.files(output.dir, full.names=T), quick=T))
 }
