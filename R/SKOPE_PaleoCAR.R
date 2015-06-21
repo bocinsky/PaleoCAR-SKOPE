@@ -1,3 +1,5 @@
+signal <- commandArgs(TRUE)
+
 # Set the working directory to the location of R-scripts
 setwd("/projects/EOT/skope/PaleoCAR-SKOPE/R")
 
@@ -15,6 +17,9 @@ options(scipen=999)
 
 # Force Raster to load large rasters into memory
 rasterOptions(chunksize=2e+07,maxmemory=2e+08)
+
+# Set the climate signal... This corresponds to very particular directories below!
+
 
 ## Set the calibration period
 # Here, I use a 60 year period ending at 1983 
@@ -38,7 +43,7 @@ treePoly <- suppressWarnings(rgeos::gBuffer(states, width=10, quadsegs=1000))
 ITRDB <- data.frame(YEAR=prediction.years, get_itrdb(template=treePoly, label="SKOPE_4CORNERS_PLUS_10DEG", raw.dir = "../../PaleoCAR_RUN/DATA/ITRDB/RAW/ITRDB/", extraction.dir = "../../PaleoCAR_RUN/DATA/ITRDB/EXTRACTIONS/ITRDB/", recon.years=prediction.years, calib.years=calibration.years, measurement.type="Ring Width", chronology.type="Standard")[['widths']])
 
 # Load the annual chunked raster bricks
-ppt.water_year_chunks.files <- list.files("../../PaleoCAR_RUN/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/PPT_water_year", full.names=T)
+ppt.water_year_chunks.files <- list.files(paste0("../../PaleoCAR_RUN/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/",signal), full.names=T)
 # gdd.may_sept_chunks.files <- list.files(paste0(EXTRACTION.DIR,"GDD_may_sept/"), full.names=T)
 
 ## BEGIN PARALLELIZATION!
@@ -59,6 +64,5 @@ process.brick <- function(brick.file, brick.years, calibration.years, prediction
 # ## PARALLEL RUN
 cl <- makeCluster(detectCores())
 clusterEvalQ(cl, {library(PaleoCAR)})
-parLapply(cl, ppt.water_year_chunks.files, process.brick, brick.years=1896:2013, out.dir="../../PaleoCAR_RUN/OUTPUT/PPT_water_year/", floor=0, verbose=F, calibration.years=calibration.years, prediction.years=prediction.years, chronologies=ITRDB, force.redo=F)
-
+parLapply(cl, ppt.water_year_chunks.files, process.brick, brick.years=1896:2013, out.dir=paste0("../../PaleoCAR_RUN/OUTPUT/",signal,"/"), floor=0, verbose=F, calibration.years=calibration.years, prediction.years=prediction.years, chronologies=ITRDB, force.redo=F, signal=signal)
 stopCluster(cl)
