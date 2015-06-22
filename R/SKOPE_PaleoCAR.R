@@ -64,5 +64,5 @@ process.brick <- function(brick.file, brick.years, calibration.years, prediction
 # ## PARALLEL RUN
 cl <- makeCluster(detectCores())
 clusterEvalQ(cl, {library(PaleoCAR)})
-parLapply(cl, ppt.water_year_chunks.files, process.brick, brick.years=1896:2013, out.dir=paste0("../../PaleoCAR_RUN/OUTPUT/",signal,"/"), floor=0, verbose=F, calibration.years=calibration.years, prediction.years=prediction.years, chronologies=ITRDB, force.redo=F, signal=signal)
+parLapply(cl, ppt.water_year_chunks.files, process.brick, brick.years=1896:2013, out.dir=paste0("../../PaleoCAR_RUN/OUTPUT/",signal,"/"), floor=0, verbose=F, calibration.years=calibration.years, prediction.years=prediction.years, chronologies=ITRDB, force.redo=F)
 stopCluster(cl)
