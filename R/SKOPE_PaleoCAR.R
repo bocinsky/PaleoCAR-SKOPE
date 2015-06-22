@@ -42,7 +42,6 @@ ITRDB <- data.frame(YEAR=prediction.years, get_itrdb(template=treePoly, label="S
 
 # Load the annual chunked raster bricks
 ppt.water_year_chunks.files <- list.files(paste0("../../PaleoCAR_RUN/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/",signal), full.names=T)
-ppt.water_year_chunks.files
 # gdd.may_sept_chunks.files <- list.files(paste0(EXTRACTION.DIR,"GDD_may_sept/"), full.names=T)
 
 ## BEGIN PARALLELIZATION!
