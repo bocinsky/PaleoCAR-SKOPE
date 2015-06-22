@@ -1,3 +1,4 @@
+# Set the climate signal... This corresponds to very particular directories below!
 signal <- commandArgs(TRUE)
 
 # Set the working directory to the location of R-scripts
@@ -17,9 +18,6 @@ options(scipen=999)
 
 # Force Raster to load large rasters into memory
 rasterOptions(chunksize=2e+07,maxmemory=2e+08)
-
-# Set the climate signal... This corresponds to very particular directories below!
-
 
 ## Set the calibration period
 # Here, I use a 60 year period ending at 1983 
@@ -44,6 +42,7 @@ ITRDB <- data.frame(YEAR=prediction.years, get_itrdb(template=treePoly, label="S
 
 # Load the annual chunked raster bricks
 ppt.water_year_chunks.files <- list.files(paste0("../../PaleoCAR_RUN/DATA/PRISM/EXTRACTIONS/SKOPE_4CORNERS/",signal), full.names=T)
+ppt.water_year_chunks.files
 # gdd.may_sept_chunks.files <- list.files(paste0(EXTRACTION.DIR,"GDD_may_sept/"), full.names=T)
 
 ## BEGIN PARALLELIZATION!
