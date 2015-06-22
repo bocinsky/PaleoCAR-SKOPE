@@ -1,7 +1,9 @@
-calcGDD_MONTHLY <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, multiplier=1, to_fahrenheit=T, output.dir='./gdd/'){
+calc_gdd_monthly <- function(tmin_brick, tmax_brick, t.base, t.cap=NULL, multiplier=1, to_fahrenheit=T, output.dir='./gdd/'){
   if(nlayers(tmin_brick)!=nlayers(tmax_brick)){
     stop("tmin and tmax bricks must have same number of layers!")
   }
+  
+  dir.create(output.dir, recursive=T, showWarnings=F)
   
   t.base <- t.base*multiplier
   if(!is.null(t.cap)){

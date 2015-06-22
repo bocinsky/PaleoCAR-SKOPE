@@ -1,6 +1,6 @@
 setwd("~/git/PaleoCAR-SKOPE/R")
 source("./calcGDD_MONTHLY.R")
-source("./annualizePRISM_MONTHLY.R")
+source("./annualize_prism_monthly.R")
 source("./demosaic.R")
 
 ## This script extracts data from the ~800 m monthly PRISM dataset
@@ -113,24 +113,24 @@ type.stacks <- lapply(types, function(type){
 names(type.stacks) <- types
 
 # Annual precipitation
-ppt.annual <- annualizePRISM_MONTHLY(prism.brick=type.stacks[['ppt']], months=c(1:12), fun='sum', out_dir=paste0(EXTRACTION.DIR,"PPT_annual/"))
+ppt.annual <- annualize_prism_monthly(prism.brick=type.stacks[['ppt']], months=c(1:12), fun='sum', out_dir=paste0(EXTRACTION.DIR,"PPT_annual/"))
 ppt.annual.chunks <- demosaic(raster_brick=ppt.annual, corners=extent.states.SW.corners, out_dir=paste0(EXTRACTION.DIR,"PPT_annual_demosaic/"))
 rm(ppt.annual); rm(ppt.annual.chunks); gc(); gc()
 
 # Water-year precipitation
-ppt.water_year <- annualizePRISM_MONTHLY(prism.brick=type.stacks[['ppt']], months=c(-2:9), fun='sum', out_dir=paste0(EXTRACTION.DIR,"PPT_water_year/"))
+ppt.water_year <- annualize_prism_monthly(prism.brick=type.stacks[['ppt']], months=c(-2:9), fun='sum', out_dir=paste0(EXTRACTION.DIR,"PPT_water_year/"))
 ppt.water_year.chunks <- demosaic(raster_brick=ppt.water_year, corners=extent.states.SW.corners, out_dir=paste0(EXTRACTION.DIR,"PPT_water_year_demosaic/"))
 rm(ppt.water_year); rm(ppt.water_year.chunks); gc(); gc()
 
 # May--Sept precipitation
-ppt.may_sept <- annualizePRISM_MONTHLY(prism.brick=type.stacks[['ppt']], months=c(5:9), fun='sum', out_dir=paste0(EXTRACTION.DIR,"PPT_may_sept/"))
+ppt.may_sept <- annualize_prism_monthly(prism.brick=type.stacks[['ppt']], months=c(5:9), fun='sum', out_dir=paste0(EXTRACTION.DIR,"PPT_may_sept/"))
 ppt.may_sept.chunks <- demosaic(raster_brick=ppt.may_sept, corners=extent.states.SW.corners, out_dir=paste0(EXTRACTION.DIR,"PPT_may_sept_demosaic/"))
 rm(ppt.may_sept); rm(ppt.may_sept.chunks); gc(); gc()
 
 # May--Sept GDD
 dir.create(paste0(EXTRACTION.DIR,"gdd/"), recursive=T, showWarnings=F)
 gdd.monthly <- calcGDD_MONTHLY(tmin_brick=type.stacks[['tmin']], tmax_brick=type.stacks[['tmax']], t.base=10, t.cap=30, multiplier=10, to_fahrenheit=T, output.dir=paste0(EXTRACTION.DIR,"gdd/"))
-gdd.may_sept <- annualizePRISM_MONTHLY(prism.brick=gdd.monthly, months=c(5:9), fun='sum', out_dir=paste0(EXTRACTION.DIR,"GDD_may_sept/"))
+gdd.may_sept <- annualize_prism_monthly(prism.brick=gdd.monthly, months=c(5:9), fun='sum', out_dir=paste0(EXTRACTION.DIR,"GDD_may_sept/"))
 gdd.may_sept.chunks <- demosaic(raster_brick=gdd.may_sept, corners=extent.states.SW.corners, out_dir=paste0(EXTRACTION.DIR,"GDD_may_sept_demosaic/"))
 rm(gdd.may_sept); rm(gdd.may_sept.chunks); gc(); gc()
 

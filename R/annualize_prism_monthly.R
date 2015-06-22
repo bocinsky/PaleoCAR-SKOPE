@@ -1,4 +1,4 @@
-annualizePRISM_MONTHLY <- function(prism.brick, months=c(1:12), fun, out_dir){
+annualize_prism_monthly <- function(prism.brick, months=c(1:12), fun, out_dir){
   dir.create(out_dir, showWarnings=F)
   brick.names <- names(prism.brick)
   brick.years <- as.numeric(lapply(strsplit(brick.names,"[A-Z]"),'[[',2))
