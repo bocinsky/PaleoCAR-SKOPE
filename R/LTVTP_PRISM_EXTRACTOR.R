@@ -46,8 +46,8 @@ Hohokam.EXT.PRISM <- get_prism_monthly(template=Hohokam.EXT.Poly, label="LTVTP_H
 
 ## Annualization example
 ## Zuni/Cibola DJFM precipitation
-Zuni.Cibola.ppt.annual <- annualize_prism_monthly(prism.brick=Zuni.Cibola.PRISM[['ppt']], months=c(0:3), fun='sum', out_dir=paste0(EXTRACTION.DIR,"LTVTP_Zuni_Cibola/PPT_DJFM/"))
-writeRaster(Zuni.Cibola.ppt.annual,file=paste0(extraction.dir,label,"/Zuni.Cibola.ppt.annual.",head(names(Zuni.Cibola.ppt.annual),1),"-",tail(names(Zuni.Cibola.ppt.annual),1),".tif"), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+Zuni.Cibola.ppt.DJFM <- annualize_prism_monthly(prism.brick=Zuni.Cibola.PRISM[['ppt']], months=c(0:3), fun='sum', out_dir=paste0(EXTRACTION.DIR,"LTVTP_Zuni_Cibola/PPT_DJFM/"))
+writeRaster(Zuni.Cibola.ppt.DJFM,file=paste0(extraction.dir,label,"/Zuni.Cibola.ppt.DJFM.",head(names(Zuni.Cibola.ppt.DJFM),1),"-",tail(names(Zuni.Cibola.ppt.DJFM),1),".tif"), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
 
 
 ## If you want to calculate GDD, there is an additional step:
