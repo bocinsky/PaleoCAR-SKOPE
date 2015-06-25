@@ -55,7 +55,7 @@ process.brick <- function(brick.file, brick.years, calibration.years, prediction
   the.brick <- raster::subset(the.brick,which(brick.years %in% calibration.years))
   names(the.brick) <- calibration.years
   
-  junk <- PaleoCAR::paleoCAR.batch(predictands=the.brick, label=basename(brick.file), chronologies=chronologies, calibration.years=calibration.years, prediction.years=prediction.years, out.dir=out.dir, ...)
+  junk <- PaleoCAR::paleoCAR.batch(predictands=the.brick, label=basename(tools::file_path_sans_ext(brick.file)), asInt=T, chronologies=chronologies, calibration.years=calibration.years, prediction.years=prediction.years, out.dir=out.dir, ...)
   return()
 }
 
