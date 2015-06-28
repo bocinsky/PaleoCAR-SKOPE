@@ -49,7 +49,7 @@ process.brick <- function(brick.file, brick.years, calibration.years, prediction
   dir.create(out.dir, recursive=T, showWarnings=F)
 #   cat("\n\nProcessing",basename(brick.file))
   the.brick <- raster::brick(brick.file)
-  
+  if(all(is.na(the.brick[]))) return()
   # These bricks are for the whole PRISM time period (1895--2013)
   # Get only calibration years
   the.brick <- raster::subset(the.brick,which(brick.years %in% calibration.years))
